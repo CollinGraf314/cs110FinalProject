@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.Random.*;
+import javax.swing.JOptionPane.*;
 public class WarGame extends JFrame
 {
    public ArrayList<Card> deck = new ArrayList<Card>();
@@ -19,23 +20,29 @@ public class WarGame extends JFrame
    private JPanel buttonPanel;
    private JLabel imageLabel;
    private JLabel imageLabel2;
+   private JButton newGame;
    private JLabel imageLabelPlayers;
    private JButton button;
    private final int WINDOW_WIDTH = 800;
-   private final int WINDOW_HEIGHT = 800;
+   private final int WINDOW_HEIGHT = 300;
    public WarGame()
    {
       makeDeck();
       setTitle("Game of War");
       setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      setLayout(new GridLayout(3,5));
+      setLayout(new BorderLayout());
       buildImagePanels();
       buildButtonPanel();
       add(imagePanel, BorderLayout.WEST);
       add(imagePanelPlayers, BorderLayout.CENTER);
       add(imagePanel2, BorderLayout.EAST);
       add(buttonPanel, BorderLayout.SOUTH);
+      Color green = new Color(0,200,0);
+      imagePanel.setBackground(green);
+      imagePanel2.setBackground(green);
+      imagePanelPlayers.setBackground(green);
+      buttonPanel.setBackground(green);
       placeDecks();
       //pack();
       setVisible(true);
@@ -131,7 +138,7 @@ public class WarGame extends JFrame
       imageLabel2 = new JLabel("Player 2's deck: "+player2deck.size()+" cards");
       imagePanel2.add(imageLabel2);
       imagePanelPlayers = new JPanel();
-      imageLabelPlayers = new JLabel("cards at war");
+      imageLabelPlayers = new JLabel("Round by Round Breakdown");
       imagePanelPlayers.add(imageLabelPlayers);
       imagePanelPlayers = new JPanel();
       imagePanelPlayers.add(imageLabelPlayers);
@@ -141,7 +148,10 @@ public class WarGame extends JFrame
       buttonPanel = new JPanel();
       button = new JButton("Flip next card");
       button.addActionListener(new ButtonListener());
-      buttonPanel.add(button);  
+      buttonPanel.add(button); 
+      newGame = new JButton("New Game");
+      newGame.addActionListener(new ButtonListener2());
+      buttonPanel.add(newGame); 
    }
    private class ButtonListener implements ActionListener
    {
@@ -153,36 +163,87 @@ public class WarGame extends JFrame
          ImageIcon player2Card = createImageIcon((player2deck.get(0)).getJpeg(), "cards");
          imageLabel2.setIcon(player2Card);
          imageLabel2.setText("Player 2's deck: "+player2deck.size()+" cards");
-         whoWon(0,0,1);
+         if(player1deck.size() < 1)
+         {
+            JOptionPane.showMessageDialog(null,"Player 2 won!");
+         }
+         else if(player2deck.size() < 1)
+         {
+            JOptionPane.showMessageDialog(null,"Player 1 won!");
+         }
+         else
+         {
+            whoWon(0,0,1);
+         }
+      }
+   }
+   private class ButtonListener2 implements ActionListener
+   {
+      public void actionPerformed(ActionEvent e)
+      {
+         placeDecks();
+         makeDeck();
+         imageLabel.setText("Player 1's deck: "+player1deck.size()+" cards");
+         imageLabel2.setText("Player 2's deck: "+player2deck.size()+" cards");
       }
    }
    public void whoWon(int p1index, int p2index, int warpot)
    {
-      if((player1deck.get(p1index)).getValue() > (player2deck.get(p2index)).getValue())
-         {
-            for(int y=0; y<warpot; y++)
+      if(player2deck.size() > p2index && player1deck.size() > p1index)
+      {
+         if((player1deck.get(p1index)).getValue() > (player2deck.get(p2index)).getValue())
             {
-               player1deck.add(player2deck.get(0));
-               player2deck.remove(0);
-               Card tmp = player1deck.get(0);
-               player1deck.remove(0);
-               player1deck.add(tmp);
+               for(int y=0; y<warpot; y++)
+               {
+                  if(player2deck.size() > 1 && player1deck.size() > 1)
+                  {
+                     player1deck.add(player2deck.get(0));
+                     player2deck.remove(0);
+                     Card tmp = player1deck.get(0);
+                     player1deck.remove(0);
+                     player1deck.add(tmp);
+                  }
+                  else
+                  {
+                     JOptionPane.showMessageDialog(null,"Player 1 won!");
+                  }
+               }
+               imageLabelPlayers.setText("This round goes to player 1.");
             }
-         }
-         else if((player1deck.get(p1index)).getValue() < (player2deck.get(p2index)).getValue())
-         {
-            for(int q=0; q<warpot; q++)
+            else if((player1deck.get(p1index)).getValue() < (player2deck.get(p2index)).getValue())
             {
-               player2deck.add(player1deck.get(0));
-               player1deck.remove(0);
-               Card tmp = player2deck.get(0);
-               player2deck.remove(0);
-               player2deck.add(tmp);
+               for(int q=0; q<warpot; q++)
+               {
+                  if(player1deck.size() > 1 && player2deck.size() > 1)
+                  {
+                     player2deck.add(player1deck.get(0));
+                     player1deck.remove(0);
+                     Card tmp = player2deck.get(0);
+                     player2deck.remove(0);
+                     player2deck.add(tmp);
+                  }
+                  else
+                  {
+                     JOptionPane.showMessageDialog(null,"Player 2 won!");
+                  }
+               }
+               imageLabelPlayers.setText("This round goes to player 2.");
+            }
+            else
+            {
+               whoWon(p1index+2,p2index+2,warpot+2);
             }
          }
          else
          {
-            whoWon(p1index+2,p2index+2,warpot+2);
+            if(player1deck.size()>player2deck.size())
+            {
+               JOptionPane.showMessageDialog(null,"Player 1 won!");
+            }
+            else
+            {
+               JOptionPane.showMessageDialog(null,"Player 2 won!");
+            }
          }
    }
    public static void main(String [] args)
